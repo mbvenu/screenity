@@ -2,6 +2,7 @@
 <html>
     <head>
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <link href="https://releases.transloadit.com/uppy/v1.25.2/uppy.min.css" rel="stylesheet">
         <link rel="stylesheet" href="../css/libraries/nice-select.css">
         <link rel="stylesheet" href="../css/libraries/plyr.min.css">
         <link rel="stylesheet" href="../css/libraries/nouislider.min.css">
@@ -60,12 +61,14 @@
         <div id="export">
             <div id="export-cont">
                 <div id="download"><img src="../assets/images/editor/download.svg"> <labelp id="download-label">Download</labelp></div>
-                <div id="share"><img src="../assets/images/editor/drive.svg"> <span>Save to Drive</span></div>
+                <div id="uppyupload"><img src="../assets/images/editor/drive.svg"> <span>Upload</span></div>
+                <!--<div id="share"><img src="../assets/images/editor/drive.svg"> <span>Save to Drive</span></div>-->
             </div>
         </div>
         <div id="content">
             <video id="video" controls></video>
         </div>
+        <script src="https://releases.transloadit.com/uppy/v1.25.2/uppy.min.js"></script>
         <script src="../js/libraries/jquery-3.5.1.min.js"></script>
         <script src="../js/libraries/jquery.nice-select.min.js"></script>
         <script src="../js/libraries/plyr.min.js"></script>
