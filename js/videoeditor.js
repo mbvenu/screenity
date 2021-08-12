@@ -5,12 +5,74 @@ $(document).ready(function(){
     var removeslider = document.getElementById('removeslider');
     var setup = true;
     var downloaded = false;
+    var folderId = "2a40c59f6537465aa676fd49d5ea6e33";
     
     // Show recorded video
     var superBuffer = new Blob(recordedBlobs, {
         type: 'video/webm'
     });
     
+    function authenticate() {
+        let email = document.getElementById("userName").value;
+        let password = document.getElementById("password").value;
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                res = JSON.parse(this.responseText);
+                if (res.access_token) {
+                    localStorage.setItem("access_token", res.access_token);
+                    localStorage.setItem("token_type", res.token_type);
+                    localStorage.setItem("id", res.id);
+                    location.reload();
+                    //var html = '<a href="' + file.url + '" download="' + file.name + '" class="buttonDownload" >Download</a>';
+                    browserCache.innerHTML = html;
+                    document.getElementById("myModal").close();
+                }
+            }
+            else if (this.readyState == 4 && this.status == 500) {
+                confirm("Credentials Are Not Matched. Please Try Again!")
+            }
+        };
+        xhttp.open("POST", "http://meander.video/token", true);
+        xhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+        xhttp.send(`email=${email}&password=${password}`);
+    }
+
+    var nodecUrl = "http://meander.video";
+    var uppy2 = new Uppy.Core({
+        meta: { userId: localStorage.getItem("id"), foldername: ""+folderId },
+        debug: true,
+        autoProceed: false,
+        restrictions: { maxNumberOfFiles: 3, allowedFileTypes: ["audio/*", "video/*"] },
+    }).use(Uppy.AwsS3Multipart, {
+        limit: 3,
+        companionUrl: nodecUrl,
+        getChunkSize(file) {
+            var chunks = Math.ceil(file.size / (5 * 1024 * 1024));
+            return file.size < 5 * 1024 * 1024
+                ? 5 * 1024 * 1024
+                : Math.ceil(file.size / (chunks - 1));
+        },
+    });
+    
+    
+    function uploadRecording() {
+    if (localStorage.getItem('access_token')) {
+        console.log(folderId)
+        if (folderId != null) {
+            var file = new Blob(blobs, {
+                type: 'video/mp4'
+            });            
+            uppy2.addFile({
+                name: 'video.mp4',
+                type: 'video/mp4',
+                data: superBuffer
+            });
+
+            uppy2.upload().then((result) => {
+               console.info('Successful uploads:', result.successful);   } 
+    }
+
     // Create the src url from the blob. #t=duration is a Chrome bug workaround, as the webm generated through Media Recorder has a N/A duration in its metadata, so you can't seek the video in the player. Using Media Fragments (https://www.w3.org/TR/media-frags/#URIfragment-user-agent) and setting the duration manually in the src url fixes the issue.
     var url = window.URL.createObjectURL(superBuffer);
     $("#video").attr("src", url+"#t="+blobs.length);
