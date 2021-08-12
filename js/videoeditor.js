@@ -46,7 +46,9 @@ $(document).ready(function(){
         restrictions: { maxNumberOfFiles: 3, allowedFileTypes: ["audio/*", "video/*"] },
     }).use(Uppy.AwsS3Multipart, {
         limit: 3,
-        companionUrl: nodecUrl,
+        companionUrl: nodecUrl+"/swift/",
+        Headers : { "uppy-auth-token" : "bearer "+localStorage.getItem("access_token")  },
+       companionHeaders:{ "uppy-auth-token" : "bearer "+  localStorage.getItem("access_token") },
         getChunkSize(file) {
             var chunks = Math.ceil(file.size / (5 * 1024 * 1024));
             return file.size < 5 * 1024 * 1024
@@ -55,6 +57,29 @@ $(document).ready(function(){
         },
     });
     
+    uppy2.setOptions({
+        onBeforeFileAdded: (currentFile, files) => {
+          var time = Date.now();     var uuid =  String(time);
+          var chunks =   Math.ceil( currentFile.data.size / (5*1024*1024));
+          if(dispName === undefined || dispName === null)
+            uppy.info("Please select a folder");
+          const modifiedFile = {        ...currentFile,
+            name: uuid + "." + currentFile.name.split(".")[1],
+            size : currentFile.data.size ,  type : currentFile.type ,
+            meta : { filename :uuid + "." +currentFile.name.split(".")[1],     userId : localStorage.getItem("id") , 
+            foldername : folderId ,
+            title : currentFile.name , name : currentFile.name , total_size : currentFile.data.size,
+            type : currentFile.type , time : String(time) , total_chunks :  chunks-1,
+            chunk_size : currentFile.data.size < 5*1024*1024 ?   5*1024*1024 :  Math.ceil(currentFile.data.size /(chunks-1)) ,
+            uploadIdToContinue : null }
+          };
+          return modifiedFile;
+        },
+      });
+      uppy2.setMeta({
+        userId: localStorage.getItem("id") ,
+        foldername: folderId,
+      });
     
     function uploadRecording() {
     if (localStorage.getItem('access_token')) {
